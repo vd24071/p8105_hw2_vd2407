@@ -48,4 +48,75 @@ prof_trash_wheel =
 
 ```
 
+## Problem 3
+
+```{r}
+polit_party =
+  read_csv("./data/pols-month.csv")%>% 
+  janitor::clean_names() %>% 
+  separate(
+    mon,
+    into = c("year", "month", "day"),
+    sep = '-') %>% 
+  mutate(year = as.integer(year),
+         month = as.integer(month),
+         day = as.integer(day),
+         month = month.name[month]) %>% 
+  relocate(prez_gop, prez_dem) %>% 
+  pivot_longer(
+    prez_gop:prez_dem,
+    names_to = "president",
+    values_to = "president_num",
+    names_prefix = "prez_") %>% 
+  filter(president_num != 0) %>% 
+  select(-president_num, -day)
+
+polit_party
+```
+
+```{r}
+snp_stocks = 
+  read_csv("./data/snp.csv") %>% 
+  janitor::clean_names() %>% 
+  separate(
+    date,
+    into = c("month", "day", "year"),
+    sep = '/') %>% 
+  mutate(year = as.integer(year),
+         month = as.integer(month),
+         day = as.integer(day),
+         month = month.name[month],
+         year = ifelse(year < 20, year + 2000, year + 1900),
+         year = as.integer(year)) %>% 
+  relocate(year, month) %>% 
+  select(-day)
+snp_stocks
+```
+
+```{r}
+unemployment = 
+  read_csv("./data/unemployment.csv") %>% 
+  pivot_longer(
+    Jan:Dec,
+    names_to = "month",
+    values_to = "perc_unemployed") %>% 
+  mutate(month = factor(month, levels = month.abb, labels = month.name),
+         month = as.character(month),
+         year = as.integer(Year)) %>% 
+  relocate(year, month) %>% 
+  select(-Year) 
+
+unemployment
+```
+
+```{r}
+snp_polit = 
+  left_join(polit_party, snp_stocks)
+
+unemploy_snp_polit =
+  left_join(snp_polit, unemployment)
+```
+
+
+
 
