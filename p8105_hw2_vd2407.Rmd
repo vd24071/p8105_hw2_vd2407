@@ -17,12 +17,16 @@ nyc_subway =
   janitor::clean_names() %>% 
   select(line, station_name, station_latitude, station_longitude, starts_with("route"), 
          entry, entrance_type, vending, ada) %>% 
-  mutate(entry = ifelse(entry == "YES", TRUE, FALSE))
+  mutate(entry = ifelse(entry == "YES", TRUE, FALSE),
+         dist_station = paste(line, station_name),
+         ada = ifelse(entry == "TRUE", TRUE, FALSE)) %>% 
+  distinct(dist_station) 
 
-#need to finish paragraph description
+# The nyc_subway dataset has the intersections of NYC subway stations, along with their latitude and longitude coordinates. It also reports what route the train is on, what kind of entrance is used to get to the subway station and if it is ADA compliant. To clean this dataset, I used the clean_names function in the janitor package, which turns all variable names into lowercase and separated by underscores. I also used select() to choose which variables to keep in the dataframe. I then used the mutate() function with ifelse() to make the entry variable a logical vector. These data are tidy.
+
+#There are 465 distinct stations. 
 
 ```
-The nyc_subway dataset contains 19 variables and 1,868 observations, so
 
 ## Problem 2
 
@@ -33,8 +37,9 @@ mr_trash_wheel =
     sheet = "Mr. Trash Wheel",
     range = "A2:N549") %>%
   janitor::clean_names() %>% 
-  mutate(sports_balls = as.integer(sports_balls), 
-    wheel_name = "mr_trash_wheel")
+  mutate(sports_balls = as.integer(sports_balls),
+          year = as.integer(year), 
+          wheel_name = "mr_trash_wheel")
 
 prof_trash_wheel =
   readxl::read_excel(
@@ -42,9 +47,19 @@ prof_trash_wheel =
     sheet = "Professor Trash Wheel",
     range = "A2:M96") %>%
   janitor::clean_names() %>% 
-  mutate(wheel_name = "prof_trash_wheel")
+  mutate(year = as.integer(year),
+         wheel_name = "prof_trash_wheel")
 
-#need to figure out how to bind/join
+mr_prof_trash_combined =
+  bind_rows(mr_trash_wheel, prof_trash_wheel)
+
+sum(prof_trash_wheel$weight_tons)
+with(mr_trash_wheel, sum(sports_balls[year == 2020]))
+
+# The combined dataset with both Mr. Trash Wheel and Professor Trash Wheel data has 641 observations.
+# Some key variables include trash wheel name, dumpster number, date, weight in tons, and volume of trash in cubic yards.
+# For available data, the total weight of trash collected by Professor Trash Wheel is 190.12 tons.
+# Mr. Trash Wheel collected 856 sports balls in 2020.
 
 ```
 
@@ -71,7 +86,6 @@ polit_party =
   filter(president_num != 0) %>% 
   select(-president_num, -day)
 
-polit_party
 ```
 
 ```{r}
@@ -90,7 +104,7 @@ snp_stocks =
          year = as.integer(year)) %>% 
   relocate(year, month) %>% 
   select(-day)
-snp_stocks
+
 ```
 
 ```{r}
@@ -106,7 +120,6 @@ unemployment =
   relocate(year, month) %>% 
   select(-Year) 
 
-unemployment
 ```
 
 ```{r}
@@ -115,6 +128,26 @@ snp_polit =
 
 unemploy_snp_polit =
   left_join(snp_polit, unemployment)
+
+nrow(polit_party)
+ncol(polit_party)
+nrow(snp_stocks)
+ncol(snp_stocks)
+nrow(unemployment)
+ncol(unemployment)
+nrow(snp_polit)
+ncol(snp_polit)
+nrow(unemploy_snp_polit)
+ncol(unemploy_snp_polit)
+
+# The pols-month and polit_party datasets have 822 observations and 9 variables with a range of years from 1947 to 2015. Some of its key variables are the date of the count, and the number of national politicians who are Democratic or Republican (e.g. gov_gop, gov_dem).
+
+#The snp initial dataset had 2 variables for date and close, the closing values of the S&P stock index, and 787 observations ranging from year 1950 to 2015. The resulting snp_stocks dataset has 787 observations and 3 variables, with the date split up by month and year. 
+
+# The initial unemployment dataset had 69 "observations"/rows and 13 variables, one column for year and the others for month, with the unemployment percentage as the values in the dataset. However, the resulting unemployment dataset after data manipulation has 816 observations and 3 variables where the months were condensed into a single column and the percent unemployed pivoted longer. 
+
+#The snp_polit merged dataset has 822 observations and 10 variables ranging from year 1947 to 2015 that includes the year, month, number of national politicians and S&P closing values. The total merged dataset with all three dataframes has 822 observations and 11 variables from years 1947 to 2015 with the year, month, number of national politicians, closing S&P values, and unemployment percentage.
+
 ```
 
 
